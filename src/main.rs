@@ -1,4 +1,5 @@
 use specs::prelude::*;
+use rltk::{RltkBuilder, BError};
 
 mod components;
 mod entities;
@@ -7,17 +8,19 @@ mod systems;
 use entities::roach::make_roach;
 use components::name::Name;
 use components::position::Position;
+use components::renderable::Renderable;
 
-use systems::debug::DebugPrinter;
+use systems::render::Renderer;
 
-fn main() {
+fn main() -> BError {
     let mut world = World::new();
 
     world.register::<Name>();
     world.register::<Position>();
+    world.register::<Renderable>();
 
     let mut dispatcher = DispatcherBuilder::new()
-        .with(DebugPrinter, "debug_printer", &[])
+        .with(Renderer, "renderer", &[])
         .build();
 
     dispatcher.dispatch(&mut world);
@@ -32,4 +35,6 @@ fn main() {
     );
 
     dispatcher.dispatch(&mut world);
+
+    return Ok(());
 }

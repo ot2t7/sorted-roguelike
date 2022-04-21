@@ -11,7 +11,7 @@ impl<'a> System<'a> for DebugPrinter {
     );
 
     fn run(&mut self, (positions, names): Self::SystemData) {
-        let mut entities_counted = 0;
+        let mut entities_counted: u32 = 0;
 
         for (name, position) in (&names, &positions).join() {
             println!("{:?} at {:?}.", name, position);
