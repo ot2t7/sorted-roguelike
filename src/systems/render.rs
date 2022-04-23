@@ -1,32 +1,28 @@
-use specs::{ReadStorage, Read, System, Join, World};
+// This file does not use the ECS System convention for handling the rendering logic.
+// This is because RLTK does not allow systems to change the state of the BTerm window.
+// So, we're going to be running inside of their tick function instead.
+
+use specs::prelude::*;
+use rltk::prelude::*;
+use std::result::Result;
+
 use crate::components::renderable::Renderable;
-use rltk::{RltkBuilder, BError, BTerm};
+use crate::components::position::Position;
 
-// This is the resource which defines the RLTK window for the entire ECS system
-#[derive(Default)]
-pub struct Window(BTerm);
+pub fn render_frame(ctx : &mut Rltk, world: &World) {
+    ctx.cls();
+    let positions = world.read_storage::<Position>();
+    let renderables = world.read_storage::<Renderable>();
 
-pub struct Renderer;
-
-impl<'a> System<'a> for Renderer {
-    type SystemData = (
-        Read<'a, Window>,
-        ReadStorage<'a, Renderable>
-    );
-
-    fn run(&mut self, (window, renderables): Self::SystemData) {
-        for (window, render_info) in (&window, &renderables).join() {
-            println!("There's a {}!", render_info.glyph);
-        }
+    for (pos, render) in (&positions, &renderables).join() {
+        ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph);
     }
 }
 
-pub fn init_renderer(world: &mut World) -> BError {
+pub fn init_renderer() -> Result<BTerm, Box<dyn std::error::Error + Send + Sync>> {
     let context = RltkBuilder::simple80x50()
         .with_title(" ")
         .build()?;
 
-    world.insert(Window(context));
-
-    return Ok(());
+    return Ok(context);
 }

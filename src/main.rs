@@ -1,40 +1,34 @@
 use specs::prelude::*;
-use rltk::{RltkBuilder, BError};
 
 mod components;
 mod entities;
 mod systems;
+mod state;
 
 use entities::roach::make_roach;
 use components::name::Name;
 use components::position::Position;
-use components::renderable::Renderable;
 
-use systems::render::Renderer;
+use systems::render;
 
-fn main() -> BError {
-    let mut world = World::new();
+fn main() {
+    let ctx = render::init_renderer().expect("Could not start the renderer");
+    
+    let mut game = state::Game {
+        world: World::new(),
+        dispatcher: systems::init_systems()
+    };
 
-    world.register::<Name>();
-    world.register::<Position>();
-    world.register::<Renderable>();
-
-    let mut dispatcher = DispatcherBuilder::new()
-        .with(Renderer, "renderer", &[])
-        .build();
-
-    dispatcher.dispatch(&mut world);
+    components::init_components(&mut game.world);
 
     make_roach(
-        &mut world, 
+        &mut game.world, 
         Position {
-            x: 0.0,
-            y: 0.0
+            x: 3,
+            y: 4
         }, 
         Name("Roach".to_string())
     );
 
-    dispatcher.dispatch(&mut world);
-
-    return Ok(());
+    rltk::main_loop(ctx, game).expect("A game tick failed processing.");
 }
