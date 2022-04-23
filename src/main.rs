@@ -12,13 +12,12 @@ use components::position::Position;
 use systems::render;
 
 fn main() {
-    let ctx = render::init_renderer().expect("Could not start the renderer");
-    
     let mut game = state::Game {
         world: World::new(),
         dispatcher: systems::init_systems()
     };
 
+    let ctx = render::init_renderer().expect("Could not start the renderer");
     components::init_components(&mut game.world);
 
     make_roach(
